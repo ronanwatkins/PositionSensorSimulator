@@ -49,7 +49,6 @@ public class GyroscopeModel extends SensorModel {
         // Update
         if (currentTime >= mNextUpdate) {
             mNextUpdate += mUpdateDuration;
-            System.out.println("mUpdateDuration Gyroscope: " + mUpdateDuration);
             if (mNextUpdate < currentTime) {
                 // Don't lag too much behind.
                 // If we are too slow, then we are too slow.

@@ -3,15 +3,16 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.shape.Box?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MainLayoutController">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MainLayoutController" fx:id="anchorPane">
    <children>
-      <Label layoutX="45.0" layoutY="38.0" text="Yaw (y)" />
+      <Label layoutX="45.0" layoutY="38.0" text="Yaw (z)" />
       <Slider fx:id="yawSlider" layoutX="45.0" layoutY="71.0" max="180.0" min="-180.0" />
       <Slider fx:id="pitchSlider" layoutX="45.0" layoutY="177.0" max="180.0" min="-180.0" />
-      <Slider fx:id="rollSlider" layoutX="45.0" layoutY="273.0" max="180.0" min="-180.0" />
+      <Slider fx:id="rollSlider" layoutX="45.0" layoutY="273.0" max="360.0" min="0.0" />
       <Label layoutX="42.0" layoutY="151.0" text="Pitch (x)" />
-      <Label layoutX="45.0" layoutY="245.0" text="Roll (z)" />
+      <Label layoutX="45.0" layoutY="245.0" text="Roll (y)" />
       <Label fx:id="yawLabel" layoutX="201.0" layoutY="70.0" text="0" />
       <Label fx:id="pitchLabel" layoutX="201.0" layoutY="176.0" text="0" />
       <Label fx:id="rollLabel" layoutX="205.0" layoutY="272.0" text="0" />
@@ -21,5 +22,7 @@
       <Label fx:id="magneticFieldLabel" layoutX="367.0" layoutY="70.0" />
       <Label fx:id="accelerometerLabel" layoutX="367.0" layoutY="101.0" />
       <Label fx:id="gyroscopeLabel" layoutX="367.0" layoutY="134.0" />
+
+      <Box fx:id="box" depth="20.0" height="100.0" width="50.0" layoutX="370.0" layoutY="280.0" />
    </children>
 </AnchorPane>

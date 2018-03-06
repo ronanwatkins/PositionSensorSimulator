@@ -4,6 +4,12 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Box;
+import javafx.scene.transform.Rotate;
 import model.*;
 import utils.Vector;
 
@@ -34,6 +40,12 @@ public class MainLayoutController implements Initializable {
     @FXML
     private Label gyroscopeLabel;
 
+    @FXML
+    private Box box;
+
+    @FXML
+    private AnchorPane anchorPane;
+
     private int yawValue;
     private int pitchValue;
     private int rollValue;
@@ -49,9 +61,19 @@ public class MainLayoutController implements Initializable {
     private GyroscopeModel gyroscopeModel;
     private MagneticFieldModel magneticFieldModel;
 
+    private double mousePosX = 0;
+    private double mousePosY = 0;
+
+    private Rotate rotateX = new Rotate(0, Rotate.X_AXIS);
+    private Rotate rotateY = new Rotate(0, Rotate.Y_AXIS);
+    private Rotate rotateZ = new Rotate(0, Rotate.Z_AXIS);
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
+        pitchSlider.setValue(-90);
+
+        //region init
         accelerometerModel = new AccelerometerModel();
         gyroscopeModel = new GyroscopeModel();
         magneticFieldModel = new MagneticFieldModel();
@@ -86,36 +108,147 @@ public class MainLayoutController implements Initializable {
                     rollValue = newvalue.intValue();
                     updateSliderValues();
                 } );
+        //endregion
 
+        final PhongMaterial redMaterial = new PhongMaterial();
+        redMaterial.setSpecularColor(Color.ORANGE);
+        redMaterial.setDiffuseColor(Color.RED);
+
+        box.setMaterial(redMaterial);
+        box.getTransforms().addAll(rotateZ, rotateY, rotateX);
+
+        anchorPane.setOnMousePressed((MouseEvent mouseEvent) -> {
+            mousePosX = mouseEvent.getSceneX();
+            mousePosY = mouseEvent.getSceneY();
+        });
+
+        anchorPane.setOnMouseDragged((MouseEvent mouseEvent) -> {
+            double dx = (mousePosX - mouseEvent.getSceneX()) ;
+            double dy = (mousePosY - mouseEvent.getSceneY());
+            if (mouseEvent.isPrimaryButtonDown()) {
+                double rotateXAngle = (rotateX.getAngle() - (dy*10 / box.getHeight() * 360) * (Math.PI / 180)) % 360;
+                if(rotateXAngle < 0)
+                    rotateXAngle += 360;
+                rotateX.setAngle(rotateXAngle);
+
+                double temp = 0;
+                if(rotateXAngle > 270 || (rotateXAngle < 90 && rotateXAngle > 0)) {
+                    if(rotateXAngle > 270) {
+                        temp = 360 - rotateXAngle - 90;
+                        System.out.println("Temp 1: " + temp);
+                        pitchValue = (int) (temp);
+                        System.out.println("pitchValue: " + pitchValue);
+                        pitchSlider.setValue(pitchValue);
+                        updateSliderValues();
+                    }
+                    else {
+                        temp = rotateXAngle - 90;
+                        System.out.println("Temp 2: " + temp);
+                        pitchValue = (int) ((90-temp)*2)-360;
+                        System.out.println("pitchValue: " + pitchValue);
+                        pitchSlider.setValue(pitchValue);
+                        updateSliderValues();
+                    }
+                }
+                else if(rotateXAngle <= 270 || rotateXAngle >= 90) {
+                    if(rotateXAngle <= 270 && rotateXAngle <= 180) {
+                        temp = rotateXAngle - 90;
+                        System.out.println("Temp 3: " + temp);
+                    } else {
+                        temp = 360 - rotateXAngle - 90;
+                        System.out.println("Temp 4: " + temp);
+                    }
+                }
+                //pitchValue = (int)temp;
+                //updateSliderValues();
+                //pitchSlider.setValue(temp);
+
+
+                double rotateYAngle = (rotateY.getAngle() - (dx*10 / box.getWidth() * -360) * (Math.PI / 180)) % 360;
+                // roll from 0 to 360
+                if (rotateYAngle < 0) {
+                    rotateYAngle = rotateYAngle + 360;
+                }
+                /*if (rotateYAngle >= 360) {
+                    rotateYAngle -= 360;
+                }*/
+                //System.out.println("rotateYAngle: " + rotateYAngle);
+                rotateY.setAngle(rotateYAngle);
+                rollSlider.setValue(rotateYAngle);
+
+                //rotateZ.setAngle(rotateZ.getAngle() -
+                //        (dx / box.getDepth() * 360) * (Math.PI / 180));
+
+
+                updateSliderValues();
+            }
+            mousePosX = mouseEvent.getSceneX();
+            mousePosY = mouseEvent.getSceneY();
+        });
     }
 
     private void updateSliderValues() {
         // Restrict pitch value to -90 to +90
         if (pitchValue < -90) {
             pitchValue = -180 - pitchValue;
-            yawValue += 180;
-            rollValue += 180;
+            //yawValue += 180;
+            //rollValue += 180;
         } else if (pitchValue > 90) {
             pitchValue = 180 - pitchValue;
-            yawValue += 180;
-            rollValue += 180;
+            //yawValue += 180;
+            //rollValue += 180;
         }
 
         // yaw from 0 to 360
         if (yawValue < 0) {
             yawValue = yawValue + 360;
+            //yawValue = yawValue + 180;
         }
         if (yawValue >= 360) {
-            yawValue -= 360;
+            yawValue = yawValue - 360;
+            //yawValue = yawValue + 180;
+        }
+
+        if (rollValue > 360) {
+            rollValue -= 360;
+        }
+        if(rollValue < 0) {
+            rollValue += 360;
         }
 
         // roll from -180 to + 180
-        if (rollValue >= 180) {
-            rollValue -= 360;
-        }
+//        if (rollValue >= 180) {
+//            rollValue -= 360;
+//        }
 
         updateMagneticFieldData();
         updateAccelerometerData();
+
+        //rotateX.setAngle(pitchValue);
+        rotateZ.setAngle(yawValue);
+        rotateY.setAngle(rollValue);
+
+        double temp = 0;
+//        if(rotateXAngle > 270 || (rotateXAngle < 90 && rotateXAngle > 0)) {
+//            if(rotateXAngle > 270) {
+//                temp = 360 - rotateXAngle - 90;
+//                System.out.println("Temp: " + temp);
+//            }
+//            else {
+//                temp = rotateXAngle - 90;
+//                System.out.println("Temp: " + temp);
+//            }
+//        }
+//        else if(rotateXAngle < 270 || rotateXAngle > 90) {
+//            if(rotateXAngle < 270 && rotateXAngle < 180) {
+//                temp = rotateXAngle - 90;
+//                System.out.println("Temp: " + temp);
+//            } else {
+//                temp = 360 - rotateXAngle - 90;
+//                System.out.println("Temp: " + temp);
+//            }
+//        }
+
 
         yawLabel.setText(yawValue + "");
         pitchLabel.setText(pitchValue + "");
